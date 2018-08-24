@@ -1,11 +1,20 @@
 class File:
     """File context manager
 
+    The file contents are read into `self.text` when entering the
+    context manager; if `read` is permitted.
+
+    The `self.text` string is written to the file when exiting the
+    context manager; if `write` is permitted.  If `self.text` can
+    not be converted to a string it will raise a `TypeError`.
+
+    In write-only mode `self.text` = ''
+
     filename (str):
         file path/name
     mode:
         'r':  read-only (default)
-        'r+': read & wite
+        'r+': read & wite`
         'w':  write-only
     encoding:
         See the codecs module for the list of supported encodings.
@@ -47,6 +56,6 @@ class File:
         if self.__openfile:
             if self.mode in ('r+', 'w'):
                 self.__openfile.seek(0)
-                self.__openfile.write(self.text)
+                self.__openfile.write(str(self.text))
                 self.__openfile.truncate()
             self.__openfile.close()
