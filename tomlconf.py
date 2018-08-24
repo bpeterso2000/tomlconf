@@ -47,6 +47,6 @@ class File:
         if self.__openfile:
             if self.mode in ('r+', 'w'):
                 self.__openfile.seek(0)
-                self.__openfile.write(self.text)
+                self.__openfile.write(str(self.text))
                 self.__openfile.truncate()
             self.__openfile.close()
