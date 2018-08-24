@@ -4,9 +4,8 @@ class File:
     The file contents are read into `self.text` when entering the
     context manager; if `read` is permitted.
 
-    The `self.text` string is written to the file when exiting the
-    context manager; if `write` is permitted.  If `self.text` can
-    not be converted to a string it will raise a `TypeError`.
+    The contents of `self.text` will be converted to a string and
+    written to the file when exiting the context manager; if `write` is permitted.
 
     In write-only mode `self.text` = ''
 
