@@ -1,19 +1,11 @@
 class File:
     """File context manager
 
-    The file contents are read into `self.text` when entering the
-    context manager; if `read` is permitted.
-
-    The contents of `self.text` will be converted to a string and
-    written to the file when exiting the context manager; if `write` is permitted.
-
-    In write-only mode `self.text` = ''
-
     filename (str):
         file path/name
     mode:
         'r':  read-only (default)
-        'r+': read & wite`
+        'r+': read & wite
         'w':  write-only
     encoding:
         See the codecs module for the list of supported encodings.
@@ -41,10 +33,8 @@ class File:
 
     def __enter__(self):
         self.__openfile = open(
-            self.filename,
-            mode=self.mode,
-            encoding=self.encoding,
-            errors=self.errors,
+            self.filename, mode=self.mode,
+            encoding=self.encoding, errors=self.errors,
             newline=''
         )
         if 'r' in self.mode:
@@ -55,6 +45,6 @@ class File:
         if self.__openfile:
             if self.mode in ('r+', 'w'):
                 self.__openfile.seek(0)
-                self.__openfile.write(str(self.text))
+                self.__openfile.write(self.text)
                 self.__openfile.truncate()
             self.__openfile.close()
