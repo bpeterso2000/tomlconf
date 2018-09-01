@@ -70,6 +70,7 @@ def get_app_dir(app_name, roaming=True, force_posix=False):
                    END CLICK CODE
 ***********************************************"""
 
+
 class File:
     """File context manager
 
@@ -95,6 +96,13 @@ class File:
         self.__openfile = None
         self._mode = mode
         self.filename = filename
+        self.path = get_app_dir(
+            os.path.splitext(
+                os.path.split(
+                    sys.argv[0]
+                    )[1]
+                )[0]
+            )
         self.encoding = encoding
         self.errors = errors
         self.text = ''
@@ -104,8 +112,11 @@ class File:
         return self._mode
 
     def __enter__(self):
+        print(self.path)
+        if not os.path.exists(self.path):
+            os.mkdir(self.path)
         self.__openfile = open(
-            self.filename,
+            os.path.join(self.path, self.filename),
             mode=self.mode,
             encoding=self.encoding,
             errors=self.errors,
@@ -123,3 +134,7 @@ class File:
                 self.__openfile.truncate()
             self.__openfile.close()
 
+
+if __name__ == "__main__":
+    with File('aewhite.txt', mode='w') as f:
+        f.text = 'This is a test'
