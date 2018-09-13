@@ -1,6 +1,0 @@
-tomlconf.egg-info/
-Pipfile
-Pipfile.lock
-.pytest_cache/
-.tox/
-__pycache__/
