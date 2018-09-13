@@ -2,7 +2,10 @@ import pytest
 import os
 import sys
 
-from tomlconf import File, WIN, get_app_dir
+from tomlconf import File, get_app_dir
+
+WIN = sys.platform.startswith('win')
+MAC = sys.platform.startswith('darwin')
 
 
 @pytest.fixture
@@ -72,15 +75,18 @@ def test_get_win_app_dir_roaming():
 
 
 @pytest.mark.appdir
-@pytest.mark.skipif(not sys.platform == 'darwin', reason='For Mac OS X Platform Only')
+@pytest.mark.skipif(not MAC, reason='For Mac platforms only')
 def test_get_mac_app_dir():
-    app_dir = os.path.join(os.path.expanduser('~'), '/Library/Application Support')
+    app_dir = os.path.join(
+        os.path.expanduser('~'),
+        '/Library/Application Support'
+    )
     result = get_app_dir('Foo Bar')
     assert app_dir in result and 'Foo Bar' in result
 
 
 @pytest.mark.appdir
-@pytest.mark.skipif(WIN, reason="Only for non Windows based systems")
+@pytest.mark.skipif(WIN, reason='Not needed for Windows platforms')
 def test_get_posix_app_dir():
     app_dir = os.path.expanduser('~')
     result = get_app_dir('Foo Bar', force_posix=True)
@@ -88,8 +94,11 @@ def test_get_posix_app_dir():
 
 
 @pytest.mark.appdir
-@pytest.mark.skipif(WIN or sys.platform == 'darwin', reason="Only for non Windows based systems")
+@pytest.mark.skipif(WIN or MAC, reason='Not needed for Windows or Mac')
 def test_get_nix_app_dir():
-    app_dir = os.environ.get('XDG_CONFIG_HOME', os.path.expanduser('~/.config'))
+    app_dir = os.environ.get(
+        'XDG_CONFIG_HOME',
+        os.path.expanduser('~/.config')
+    )
     result = get_app_dir('Foo Bar')
     assert app_dir in result and 'foo-bar' in result
