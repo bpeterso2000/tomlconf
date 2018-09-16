@@ -1,6 +1,6 @@
 import os
 import sys
-
+import tomlkit
 
 def _posixify(name):
     return '-'.join(name.split()).lower()
@@ -67,8 +67,8 @@ def get_app_dir(app_name, roaming=True, force_posix=False):
     )
 
 
-class File:
-    """File context manager
+class Config:
+    """File context manager for TOML config file
 
     filename (str):
         file path/name
