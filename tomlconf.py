@@ -1,5 +1,6 @@
 import os
 import sys
+import tomlkit
 
 """This section of code taken from the Click module instead of bring in the entire
 library for this one function.
@@ -71,7 +72,7 @@ def get_app_dir(app_name, roaming=True, force_posix=False):
 ***********************************************"""
 
 
-class File:
+class Config:
     """File context manager
 
     filename (str):
@@ -105,7 +106,7 @@ class File:
             )
         self.encoding = encoding
         self.errors = errors
-        self.text = ''
+        self.data = ''
 
     @property
     def mode(self):
@@ -123,18 +124,18 @@ class File:
             newline=''
         )
         if 'r' in self.mode:
-            self.text = self.__openfile.read()
+            self.data = self.__openfile.read()
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         if self.__openfile:
             if self.mode in ('r+', 'w'):
                 self.__openfile.seek(0)
-                self.__openfile.write(str(self.text))
+                self.__openfile.write(str(self.data))
                 self.__openfile.truncate()
             self.__openfile.close()
 
 
 if __name__ == "__main__":
-    with File('aewhite.txt', mode='w') as f:
-        f.text = 'This is a test'
+    with Config('aewhite.txt', mode='w') as f:
+        f.data = 'This is a test'
