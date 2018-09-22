@@ -113,7 +113,6 @@ class Config:
         return self._mode
 
     def __enter__(self):
-        print(self.path, file=sys.stderr)
         if not os.path.exists(self.path):
             os.mkdir(self.path)
         self.__openfile = open(
@@ -125,6 +124,7 @@ class Config:
         )
         if 'r' in self.mode:
             self.data = self.__openfile.read()
+            self.toml = tomlkit.parse(self.data)
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):

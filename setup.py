@@ -7,5 +7,5 @@ setup(
     author='Name',
     author_email='author@mail.com',
     description='Description of my package',
-    packages=find_packages(), install_requires=['tomlkit']
+    packages=find_packages(), install_requires=['tomlkit', 'pytest']
 )
