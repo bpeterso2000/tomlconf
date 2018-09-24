@@ -77,6 +77,8 @@ class Config:
 
     filename (str):
         file path/name
+        default: path/filename as is the norm for the system ran on determined by the function get_app_dir borrowed
+                 from the Click module.
     mode:
         'r':  read-only (default)
         'r+': read & wite
@@ -89,24 +91,22 @@ class Config:
         permitted encoding error strings. The default is 'strict'.
     """
 
-    def __init__(self, filename, mode='r', encoding='utf-8', errors='strict'):
+    def __init__(self, filename=None, mode='r', encoding='utf-8', errors='strict', roaming=True, force_posix=False):
         if mode not in ('r', 'r+', 'w'):
             raise ValueError(
               "File context manager mode must be 'r', 'r+' or 'w'."
             )
         self.__openfile = None
         self._mode = mode
-        self.filename = filename
-        self.path = get_app_dir(
-            os.path.splitext(
-                os.path.split(
-                    sys.argv[0]
-                    )[1]
-                )[0]
-            )
+
+        if not filename:
+            self.filename = get_app_dir(sys.argv[0], roaming=roaming, force_posix=force_posix)
+        else:
+            self.filename = filename
+        self.path = os.path.split(filename)[0]
         self.encoding = encoding
         self.errors = errors
-        self.data = ''
+        self.data = tomlkit.document()
 
     @property
     def mode(self):
@@ -114,7 +114,7 @@ class Config:
 
     def __enter__(self):
         if not os.path.exists(self.path):
-            os.mkdir(self.path)
+            os.makedirs(self.path)
         self.__openfile = open(
             os.path.join(self.path, self.filename),
             mode=self.mode,
@@ -123,19 +123,18 @@ class Config:
             newline=''
         )
         if 'r' in self.mode:
-            self.data = self.__openfile.read()
-            self.toml = tomlkit.parse(self.data)
+            self.data = tomlkit.parse(self.__openfile.read())
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         if self.__openfile:
             if self.mode in ('r+', 'w'):
                 self.__openfile.seek(0)
-                self.__openfile.write(str(self.data))
+                self.__openfile.write(tomlkit.dumps(self.data))
                 self.__openfile.truncate()
             self.__openfile.close()
 
 
 if __name__ == "__main__":
-    with Config('aewhite.txt', mode='w') as f:
+    with Config() as f:
         f.data = 'This is a test'
