@@ -38,6 +38,7 @@ toml_doc = tomlkit.loads(file_content)
 
 toml_blank = tomlkit.document()
 
+
 @pytest.fixture
 def tmpfile(tmpdir):
     p = tmpdir.mkdir('testdir').join('testfile.txt')
