@@ -137,4 +137,4 @@ class Config:
 
 if __name__ == "__main__":
     with Config() as f:
-        f.data = 'This is a test'
+        f.data = 'This is a test, This is only a test'
