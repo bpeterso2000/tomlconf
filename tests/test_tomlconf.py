@@ -1,6 +1,8 @@
 import pytest
 import os
-import sys
+import tomlkit
+
+from tomlconf import Config, WIN, MAC, get_app_dir
 
 file_content = """# This is a TOML document.
 
@@ -76,11 +78,13 @@ def test_invalid_mode(tmpfile):
 
 
 def test_encoding(tmpfile):
-    test_data_iso_8859_5 = tomlkit.loads("""[entry]
-    testdata = "данные испытани"
+    test_data_iso_8859_5 = tomlkit.loads("""
+        [entry]
+        testdata = "данные испытани"
     """)
-    test_data_utf_8 = tomlkit.loads("""[entry]
-    testdata = "������ ��������"
+    test_data_utf_8 = tomlkit.loads("""
+        [entry]
+        testdata = "������ ��������"
     """)
     with Config(tmpfile, 'w', encoding='iso-8859-5') as file:
         file.data = test_data_iso_8859_5
@@ -110,9 +114,12 @@ def test_get_win_app_dir_roaming():
 
 
 @pytest.mark.appdir
-@pytest.mark.skipif(not sys.platform == 'darwin', reason='For Mac OS X Platform Only')
+@pytest.mark.skipif(not MAC, reason='For Mac OS X Platform Only')
 def test_get_mac_app_dir():
-    app_dir = os.path.join(os.path.expanduser('~'), '/Library/Application Support')
+    app_dir = os.path.join(
+        os.path.expanduser('~'),
+        '/Library/Application Support'
+    )
     result = get_app_dir('Foo Bar')
     assert app_dir in result and 'Foo Bar' in result
 
@@ -126,8 +133,10 @@ def test_get_posix_app_dir():
 
 
 @pytest.mark.appdir
-@pytest.mark.skipif(WIN or sys.platform == 'darwin', reason="Only for non Windows based systems")
+@pytest.mark.skipif(WIN or MAC, reason="Only for non Windows based systems")
 def test_get_nix_app_dir():
-    app_dir = os.environ.get('XDG_CONFIG_HOME', os.path.expanduser('~/.config'))
+    app_dir = os.environ.get(
+        'XDG_CONFIG_HOME', os.path.expanduser('~/.config')
+    )
     result = get_app_dir('Foo Bar')
     assert app_dir in result and 'foo-bar' in result

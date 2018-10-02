@@ -2,14 +2,11 @@ import os
 import sys
 import tomlkit
 
-"""This section of code taken from the Click module instead of bring in the entire
-library for this one function.
-Please visit http://click.pocoo.org for more information on the click library
-
-The comment END CLICK CODE below marks the end of the click library code 
-"""
-
 WIN = sys.platform.startswith('win')
+MAC = sys.platform.startswith('darwin')
+
+# get_app_dir is from the Click package. Visit
+# http://click.pocoo.org for more information on the click library.
 
 
 def _posixify(name):
@@ -70,13 +67,11 @@ def get_app_dir(app_name, roaming=True, force_posix=False):
         _posixify(app_name))
 
 
-class File:
+class Config:
     """File context manager
 
     filename (str):
-        file path/name
-        default: path/filename as is the norm for the system ran on determined by the function get_app_dir borrowed
-                 from the Click module.
+        path or file name
     mode:
         'r':  read-only (default)
         'r+': read & wite
@@ -89,7 +84,11 @@ class File:
         permitted encoding error strings. The default is 'strict'.
     """
 
-    def __init__(self, filename=None, mode='r', encoding='utf-8', errors='strict', roaming=True, force_posix=False):
+    def __init__(
+        self, filename=None, mode='r',
+        encoding='utf-8', errors='strict',
+        roaming=True, force_posix=False
+    ):
         if mode not in ('r', 'r+', 'w'):
             raise ValueError(
               "File context manager mode must be 'r', 'r+' or 'w'."
@@ -98,7 +97,9 @@ class File:
         self._mode = mode
 
         if not filename:
-            self.filename = get_app_dir(sys.argv[0], roaming=roaming, force_posix=force_posix)
+            self.filename = get_app_dir(
+                sys.argv[0], roaming=roaming, force_posix=force_posix
+            )
         else:
             self.filename = filename
         self.path = os.path.split(filename)[0]
@@ -117,8 +118,7 @@ class File:
             os.path.join(self.path, self.filename),
             mode=self.mode,
             encoding=self.encoding,
-            errors=self.errors,
-            newline=''
+            errors=self.errors
         )
         if 'r' in self.mode:
             self.data = tomlkit.parse(self.__openfile.read())
@@ -131,4 +131,3 @@ class File:
                 self.__openfile.write(tomlkit.dumps(self.data))
                 self.__openfile.truncate()
             self.__openfile.close()
-
