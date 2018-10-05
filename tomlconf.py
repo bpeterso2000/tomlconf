@@ -59,7 +59,7 @@ def get_app_dir(app_name, roaming=True, force_posix=False):
 
     if force_posix:
         return os.path.join(os.path.expanduser('~/.' + _posixify(app_name)))
-    if sys.platform == 'darwin':  # mac os x
+    if MAC:
         return os.path.join(os.path.expanduser(
             '~/Library/Application Support'), app_name)
     return os.path.join(
