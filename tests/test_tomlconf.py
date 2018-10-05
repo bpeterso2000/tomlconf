@@ -94,7 +94,7 @@ def test_encoding(tmpfile):
     with Config(tmpfile, 'w', encoding='iso-8859-5') as file:
         file.data = test_data_iso_8859_5
     with pytest.raises(UnicodeDecodeError):
-        with Config(tmpfile, 'r') as file:
+        with Config(tmpfile, 'r'):
             pass
     with Config(tmpfile, 'r', encoding='utf-8', errors='replace') as file:
         assert file.data == test_data_utf_8
