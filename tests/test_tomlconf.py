@@ -2,7 +2,7 @@ import pytest
 import os
 import tomlkit
 
-from tomlconf import Config, WIN, MAC, get_app_dir
+from tomlconf.core import Config, WIN, MAC, get_app_dir
 
 file_content = """# This is a TOML document.
 
@@ -11,7 +11,7 @@ title = "TOML Example"
 [owner]
 name = "Tom Preston-Werner"
 organization = "GitHub"
-bio = "GitHub Cofounder & CEO\nLikes tater tots and beer."
+bio = "GitHub Cofounder & CEO\\nLikes tater tots and beer."
 dob = 1979-05-27T07:32:00Z # First class dates? Why not?
 
 [database]
@@ -31,11 +31,9 @@ foo = "bar"
 [table2]
 array = [1, 2, 3]
 """
+
 new_data = tomlkit.parse(file_content_2)
-
-
 toml_doc = tomlkit.loads(file_content)
-
 toml_blank = tomlkit.document()
 
 
