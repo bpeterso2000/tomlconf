@@ -8,7 +8,7 @@ setup(
     author_email='author@mail.com',
     description='Description of my package',
     packages=find_packages(),
-    install_requires=['tomlkit',
+    install_requires=['tomlkit>=0.5.3',
                       'pytest',
                       ],
     test_requires=['pytz',
