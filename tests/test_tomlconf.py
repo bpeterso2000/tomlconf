@@ -4,8 +4,7 @@ import pytest
 import tomlkit
 import tomlkit.exceptions
 
-import tomlconf
-from tomlconf import Config, WIN, MAC, get_app_dir, TomlConfError, ModeError
+from tomlconf.core import Config, WIN, MAC, get_app_dir
 
 file_content = """# This is a TOML document.
 
@@ -14,25 +13,7 @@ title = "TOML Example"
 [owner]
 name = "Tom Preston-Werner"
 organization = "GitHub"
-bio = "GitHub Cofounder & CEO Likes tater tots and beer."
-dob = 1979-05-27T07:32:00Z # First class dates? Why not?
-
-[database]
-server = "192.168.1.1"
-ports = [8001, 8001, 8002]
-connection_max = 5000
-enabled = true
-"""
-
-bad_file_content = """# This is a TOML document.
-
-title = "TOML Example"
-
-[owner]
-name = "Tom Preston-Werner"
-name = "Tom Preston-Werner"
-organization = "GitHub"
-bio = "GitHub Cofounder & CEO Likes tater tots and beer."
+bio = "GitHub Cofounder & CEO\\nLikes tater tots and beer."
 dob = 1979-05-27T07:32:00Z # First class dates? Why not?
 
 [database]
@@ -62,19 +43,8 @@ foo = "bar"
 array = [1, 2, 3]
 """
 
-file_content_3 = """
-[table]
-baz = 13
-foo = "bar"
-
-[table2]
-array = [1, 2, 3]
-"""
-
 new_data = tomlkit.parse(file_content_2)
-
 toml_doc = tomlkit.loads(file_content)
-
 toml_blank = tomlkit.document()
 
 
