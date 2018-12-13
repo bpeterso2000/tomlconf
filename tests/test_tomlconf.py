@@ -3,6 +3,7 @@ import os
 import sys
 import tomlkit
 
+
 from tomlconf.core import Config, WIN, MAC, get_app_dir, get_filename, stem
 
 file_content = """# This is a TOML document.

@@ -1,5 +1,4 @@
-import tomlkit.exceptions
-
+import tomlkit
 import pytest
 
 from tomlconf.container import TOMLDocument
