@@ -174,3 +174,9 @@ def test_get_filename(config_path, roaming, force_posix):
     elif os.path.basename(config_path).split('.')[1] == 'toml':
         # Scenario 4
         assert result == config_path
+
+
+@pytest.mark.get_filename
+def test_key_already_present():
+    with pytest.raises(ValueError):
+        assert get_filename('win.ini')
