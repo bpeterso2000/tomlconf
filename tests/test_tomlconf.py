@@ -162,17 +162,17 @@ def test_get_nix_app_dir():
 def test_get_filename(config_path, roaming, force_posix):
     result = get_filename(config_path, roaming, force_posix)
     if not config_path:
-        # Scenario 1
+        # Test for config_path not set
         assert result == os.path.join(get_app_dir(stem(sys.argv[0]), roaming=roaming, force_posix=force_posix),
                                       'conf.toml')
     elif os.path.isdir(config_path):
-        # Scenario 2
+        # Test for config_path is a directory
         assert result == os.path.join(config_path, 'conf.toml')
     elif stem(config_path) == config_path:
-        # Scenario 3
+        # Test for config_path is an app name (no directory information or extension)
         assert result == os.path.join(get_app_dir(config_path, roaming=roaming, force_posix=force_posix), 'conf.toml')
     elif os.path.basename(config_path).split('.')[1] == 'toml':
-        # Scenario 4
+        # Test for config_path ending with a .toml extension
         assert result == config_path
 
 

@@ -87,22 +87,22 @@ def parse_toml(s):
 
 def get_filename(config_path=None, roaming=True, force_posix=False):
     if not config_path:
-        # Scenario 1:
+        # config_path not set
         path = get_app_dir(stem(sys.argv[0]), roaming=roaming, force_posix=force_posix)
         return os.path.join(path, 'conf.toml')
     elif os.path.isdir(config_path):
-        # Scenario 2
+        # config_path is a directory
         path = config_path
         return os.path.join(path, 'conf.toml')
     elif stem(config_path) == config_path:
-        # Scenario 3d
+        # config_path is an app name (Doesn't look like a path & doesn't have and extension)
         path = get_app_dir(config_path, roaming=roaming, force_posix=force_posix)
         return os.path.join(path, 'conf.toml')
     elif os.path.basename(config_path).split('.')[1] == 'toml':
-        # Scenario 4
+        # config_path ends with a .toml extension
         return config_path
     elif os.path.basename(config_path).split('.')[1] != 'toml':
-        # Scenario 5
+        # config_path ends with an extension other than .toml
         raise ValueError('Config filename must use ".toml" extension')
 
 
