@@ -1,4 +1,4 @@
-import tomlkit
+import tomlkit.exceptions
 
 
 class TOMLConfError(Exception):

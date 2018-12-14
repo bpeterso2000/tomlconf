@@ -1,4 +1,6 @@
 import tomlkit
+import tomlkit.exceptions
+import tomlkit.container
 
 from .errors import KeyAlreadyPresent, NonExistentKey
 
