@@ -1,12 +1,13 @@
 import pytest
 import os
 import sys
+import tempfile
+
 import tomlkit
 
+from tomlconf.core import Config, WIN, MAC, get_app_dir, get_filename
 
-from tomlconf.core import Config, WIN, MAC, get_app_dir, get_filename, stem
-
-file_content = """# This is a TOML document.
+TOML_SAMPLE1 = """# This is a TOML document.
 title = "TOML Example"
 [owner]
 name = "Tom Preston-Werner"
@@ -20,9 +21,7 @@ connection_max = 5000
 enabled = true
 """
 
-old_data = tomlkit.parse(file_content)
-
-file_content_2 = """
+TOML_SAMPLE2 = """
 [table]
 baz = 13
 foo = "bar"
@@ -30,60 +29,44 @@ foo = "bar"
 array = [1, 2, 3]
 """
 
-new_data = tomlkit.parse(file_content_2)
-toml_doc = tomlkit.loads(file_content)
-toml_blank = tomlkit.document()
+TOML_DOC = tomlkit.loads(TOML_SAMPLE1)
+OLD_DATA = tomlkit.parse(TOML_SAMPLE1)
+NEW_DATA = tomlkit.parse(TOML_SAMPLE2)
+TOML_BLANK = tomlkit.document()
 
-get_filename_params = [
-    ('', True, False),
-    ('', False, True),
-    ('', True, True),
-    ('', False, False),
-    ('/Users/archiewhite', True, False),
-    ('/Users/archiewhite', False, True),
-    ('/Users/archiewhite', True, True),
-    ('/Users/archiewhite', False, False),
-    ('fubar', True, False),
-    ('fubar', False, True),
-    ('fubar', True, True),
-    ('fubar', False, False),
-    ('/hello/bob.toml', True, False),
-    ('/hello/bob.toml', False, True),
-    ('/hello/bob.toml', True, True),
-    ('/hello/bob.toml', False, False),
-]
+TEMP_PATH = tempfile.gettempdir()
 
 
 @pytest.fixture
 def tmpfile(tmpdir):
     p = tmpdir.mkdir('testdir').join('testfile.toml')
-    p.write(tomlkit.dumps(toml_doc))
+    p.write(tomlkit.dumps(TOML_DOC))
     return str(p)
 
 
 def test_read_only(tmpfile):
     with Config(tmpfile, 'r') as file:
         assert file.mode == 'r'
-        assert file.data == old_data
-        file.data = new_data
+        assert file.data == OLD_DATA
+        file.data = NEW_DATA
     with Config(tmpfile, 'r') as file:
-        assert file.data == old_data
+        assert file.data == OLD_DATA
 
 
 def test_write_only(tmpfile):
     with Config(tmpfile, 'w') as file:
-        assert file.data == toml_blank
-        file.data = new_data
+        assert file.data == TOML_BLANK
+        file.data = NEW_DATA
     with Config(tmpfile, 'r') as file:
-        assert file.data == new_data
+        assert file.data == NEW_DATA
 
 
 def test_read_write(tmpfile):
     with Config(tmpfile, 'r+') as file:
-        assert file.data == old_data
-        file.data = new_data
+        assert file.data == OLD_DATA
+        file.data = NEW_DATA
     with Config(tmpfile, 'r') as file:
-        assert file.data == new_data
+        assert file.data == NEW_DATA
 
 
 def test_invalid_mode(tmpfile):
@@ -157,26 +140,42 @@ def test_get_nix_app_dir():
     assert app_dir in result and 'foo-bar' in result
 
 
-@pytest.mark.get_filename
-@pytest.mark.parametrize('config_path, roaming, force_posix', get_filename_params)
-def test_get_filename(config_path, roaming, force_posix):
-    result = get_filename(config_path, roaming, force_posix)
-    if not config_path:
-        # Test for config_path not set
-        assert result == os.path.join(get_app_dir(stem(sys.argv[0]), roaming=roaming, force_posix=force_posix),
-                                      'conf.toml')
-    elif os.path.isdir(config_path):
-        # Test for config_path is a directory
-        assert result == os.path.join(config_path, 'conf.toml')
-    elif stem(config_path) == config_path:
-        # Test for config_path is an app name (no directory information or extension)
-        assert result == os.path.join(get_app_dir(config_path, roaming=roaming, force_posix=force_posix), 'conf.toml')
-    elif os.path.basename(config_path).split('.')[1] == 'toml':
-        # Test for config_path ending with a .toml extension
-        assert result == config_path
+@pytest.mark.getfile
+def test_config_path_not_set():
+    result = get_filename()
+    progname = os.path.splitext(os.path.basename(sys.argv[0]))[0]
+    endswith = os.path.join(progname, 'conf.toml')
+    assert result.endswith(endswith)
+    assert len(result) > len(endswith)
 
 
-@pytest.mark.get_filename
-def test_key_already_present():
+@pytest.mark.getfile
+def test_config_path_is_path():
+    assert get_filename(TEMP_PATH) == os.path.join(TEMP_PATH, 'conf.toml')
+
+
+@pytest.mark.getfile
+def test_config_path_looks_like_path():
+    assert get_filename('/not/really/a/path') == os.path.join('/not/really/a/path', 'conf.toml')
+
+
+@pytest.mark.getfile
+def test_config_path_is_app_name():
+    result = get_filename('foo')
+    endswith = os.path.join(*os.path.split('foo/conf.toml'))
+    assert result.endswith(endswith)
+    assert len(result) > len(endswith)
+
+
+@pytest.mark.getfile
+def test_config_path_is_file_name():
+    assert get_filename('foo.toml') == 'foo.toml'
+    assert get_filename('/foo/bar.toml') == '/foo/bar.toml'
+
+
+@pytest.mark.getfile
+def test_config_path_is_file_with_bad_extension():
     with pytest.raises(ValueError):
-        assert get_filename('win.ini')
+        assert get_filename('/foo/bar.yaml')
+    with pytest.raises(ValueError):
+        assert get_filename('foo.yaml')
