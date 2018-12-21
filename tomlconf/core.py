@@ -9,11 +9,18 @@ WIN = sys.platform.startswith('win')
 MAC = sys.platform.startswith('darwin')
 
 
-def stem(path):
+def path_parts(full_path):
+    """Breaks the full_path down into its component parts (path, filename, extension)
+
+    path: everything except the last directory or filename.ext
+    filename: everything after the last separator not including the extension
+    extension: everything after the last '.' in the filename including the '.'
+
+    NOTE: if the filename starts with a '.' that '.' is not counted as the start of the extension
     """
-    Returns the filename less path and ext
-    """
-    return os.path.splitext(os.path.basename(path))[0]
+    path, basename = os.path.split(full_path)
+    filename, extension = os.path.splitext(basename)
+    return path, filename, extension
 
 
 # get_app_dir is from the Click package. Visit
@@ -21,9 +28,7 @@ def stem(path):
 
 
 def _posixify(name):
-    """
-    Returns name with spaces converted to dashes converted to lower case
-    """
+    """Coverts spaces to dashes; characters to lowercase."""
     return '-'.join(name.split()).lower()
 
 
@@ -85,25 +90,44 @@ def parse_toml(s):
         raise TOMLParseError(e, e.line, e.col)
 
 
-def get_filename(config_path=None, roaming=True, force_posix=False):
+def get_filename(config_path='', roaming=True, force_posix=False):
+    """Return the path/filename where the config will be stored.
+    When config_path is a ...
+        * PATH NAME: (looks like a directory)
+            <config_path>/conf.toml
+        * APP NAME (not a directory & doesn't have a file extension):
+            <appdir>/<config_path>/conf.toml
+        * FILE NAME (has a .toml extension):
+            <config_path>
+        * NOT SET:
+            <appdir>/<progname>/conf.toml
+    """
+
+    path, filename, extension = path_parts(config_path)
+
+    # NOT SET
     if not config_path:
-        # config_path not set
-        path = get_app_dir(stem(sys.argv[0]), roaming=roaming, force_posix=force_posix)
+        path = get_app_dir(
+            path_parts(sys.argv[0])[1], roaming=roaming, force_posix=force_posix
+        )
         return os.path.join(path, 'conf.toml')
-    elif os.path.isdir(config_path):
-        # config_path is a directory
-        path = config_path
+
+    # PATH NAME
+    elif path and not extension:
+        return os.path.join(path, filename, 'conf.toml')
+
+    # APP NAME
+    elif filename == config_path:
+        path = get_app_dir(
+            config_path, roaming=roaming, force_posix=force_posix
+        )
         return os.path.join(path, 'conf.toml')
-    elif stem(config_path) == config_path:
-        # config_path is an app name (Doesn't look like a path & doesn't have and extension)
-        path = get_app_dir(config_path, roaming=roaming, force_posix=force_posix)
-        return os.path.join(path, 'conf.toml')
-    elif os.path.basename(config_path).split('.')[1] == 'toml':
-        # config_path ends with a .toml extension
+
+    # FILE NAME
+    elif extension == '.toml':
         return config_path
-    elif os.path.basename(config_path).split('.')[1] != 'toml':
-        # config_path ends with an extension other than .toml
-        raise ValueError('Config filename must use ".toml" extension')
+
+    raise ValueError('Config filename must have a ".toml" extension')
 
 
 class Config:
