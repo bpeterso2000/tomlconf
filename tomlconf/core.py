@@ -1,3 +1,4 @@
+import collections
 import os
 import sys
 import tomlkit
@@ -9,7 +10,7 @@ WIN = sys.platform.startswith('win')
 MAC = sys.platform.startswith('darwin')
 
 
-def path_parts(full_path):
+def get_path_parts(full_path):
     """Breaks the full_path down into its component parts (path, filename, extension)
 
     path: everything except the last directory or filename.ext
@@ -18,9 +19,15 @@ def path_parts(full_path):
 
     NOTE: if the filename starts with a '.' that '.' is not counted as the start of the extension
     """
+    PathParts = collections.namedtuple('PathParts', [
+        'path',
+        'filename',
+        'extension',
+    ])
     path, basename = os.path.split(full_path)
     filename, extension = os.path.splitext(basename)
-    return path, filename, extension
+
+    return PathParts(path, filename, extension)
 
 
 # get_app_dir is from the Click package. Visit
@@ -103,29 +110,29 @@ def get_filename(config_path='', roaming=True, force_posix=False):
             <appdir>/<progname>/conf.toml
     """
 
-    path, filename, extension = path_parts(config_path)
+    path_parts = get_path_parts(config_path)
 
     # NOT SET
     if not config_path:
         path = get_app_dir(
-            path_parts(sys.argv[0])[1], roaming=roaming, force_posix=force_posix
+            get_path_parts(sys.argv[0]).filename, roaming=roaming, force_posix=force_posix
         )
-        return os.path.join(path, 'conf.toml')
+        return os.path.join(path, 'conf.toml').replace('\\', '/')
 
     # PATH NAME
-    elif path and not extension:
-        return os.path.join(path, filename, 'conf.toml')
+    elif path_parts.path and not path_parts.extension:
+        return os.path.join(path_parts.path, path_parts.filename, 'conf.toml').replace('\\', '/')
 
     # APP NAME
-    elif filename == config_path:
+    elif path_parts.filename == config_path:
         path = get_app_dir(
             config_path, roaming=roaming, force_posix=force_posix
         )
-        return os.path.join(path, 'conf.toml')
+        return os.path.join(path, 'conf.toml').replace('\\', '/')
 
     # FILE NAME
-    elif extension == '.toml':
-        return config_path
+    elif path_parts.extension == '.toml':
+        return config_path.replace('\\', '/')
 
     raise ValueError('Config filename must have a ".toml" extension')
 
