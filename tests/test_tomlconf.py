@@ -144,25 +144,25 @@ def test_get_nix_app_dir():
 def test_config_path_not_set():
     result = get_filename()
     progname = os.path.splitext(os.path.basename(sys.argv[0]))[0]
-    endswith = os.path.join(progname, 'conf.toml')
+    endswith = os.path.join(progname, 'conf.toml').replace('\\', '/')
     assert result.endswith(endswith)
     assert len(result) > len(endswith)
 
 
 @pytest.mark.getfile
 def test_config_path_is_path():
-    assert get_filename(TEMP_PATH) == os.path.join(TEMP_PATH, 'conf.toml')
+    assert get_filename(TEMP_PATH) == os.path.join(TEMP_PATH, 'conf.toml').replace('\\', '/')
 
 
 @pytest.mark.getfile
 def test_config_path_looks_like_path():
-    assert get_filename('/not/really/a/path') == os.path.join('/not/really/a/path', 'conf.toml')
+    assert get_filename('/not/really/a/path') == '/not/really/a/path/conf.toml'
 
 
 @pytest.mark.getfile
 def test_config_path_is_app_name():
     result = get_filename('foo')
-    endswith = os.path.join(*os.path.split('foo/conf.toml'))
+    endswith = 'foo/conf.toml'
     assert result.endswith(endswith)
     assert len(result) > len(endswith)
 
