@@ -148,15 +148,15 @@ def test_get_path_parts_empty():
 @pytest.mark.getpathparts
 @pytest.mark.skipif(not WIN, reason='Only for Windows based systems')
 def test_get_path_parts_all_backslashes():
-    test_path = os.path.join('c:\\', 'sub1', 'sub2', 'test.txt')
-    assert get_path_parts(test_path) == (os.path.join('c:\\', 'sub1', 'sub2'), 'test', '.txt')
+    test_path = os.path.join('c:/', 'sub1', 'sub2', 'test.txt')
+    assert get_path_parts(test_path) == (os.path.join('c:/', 'sub1', 'sub2'), 'test', '.txt')
 
 
 @pytest.mark.getpathparts
 @pytest.mark.skipif(WIN, reason='Only for none Windows based systems')
 def test_get_path_parts_all_backslashes():
     test_path = os.path.join('c:\\', 'sub1', 'sub2', 'test.txt')
-    assert get_path_parts(test_path) == (os.path.join('c:\\', 'sub1', 'sub2'), 'test', '.txt')
+    assert get_path_parts(test_path) == ('', os.path.join('c:\\', 'sub1', 'sub2'), 'test', '.txt')
 
 
 @pytest.mark.getpathparts
