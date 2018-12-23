@@ -10,24 +10,32 @@ WIN = sys.platform.startswith('win')
 MAC = sys.platform.startswith('darwin')
 
 
-def get_path_parts(full_path):
+def get_path_parts(p=''):
     """Breaks the full_path down into its component parts (path, filename, extension)
 
-    path: everything except the last directory or filename.ext
-    filename: everything after the last separator not including the extension
+    drive    : Only useful on DOS/Windows/NT is '' otherwise
+    path     : everything except the last directory or filename.ext
+    filename : everything after the last separator not including the extension
     extension: everything after the last '.' in the filename including the '.'
 
     NOTE: if the filename starts with a '.' that '.' is not counted as the start of the extension
     """
     PathParts = collections.namedtuple('PathParts', [
+        'drive',
         'path',
         'filename',
         'extension',
     ])
-    path, basename = os.path.split(full_path)
+    normp = p.replace('\\', '/')  # normalize the path to one python likes better
+    drive, fixed_path = os.path.splitdrive(normp)
+    path, basename = os.path.split(fixed_path)
     filename, extension = os.path.splitext(basename)
-
-    return PathParts(path, filename, extension)
+    #  send back the original string broken up not our normalized one
+    return PathParts(drive,
+                     p[normp.find(path):normp.find(path) + len(path)],
+                     p[normp.find(filename):normp.find(filename) + len(filename)],
+                     p[normp.find(extension):normp.find(extension) + len(extension)],
+                     )
 
 
 # get_app_dir is from the Click package. Visit
@@ -117,22 +125,22 @@ def get_filename(config_path='', roaming=True, force_posix=False):
         path = get_app_dir(
             get_path_parts(sys.argv[0]).filename, roaming=roaming, force_posix=force_posix
         )
-        return os.path.join(path, 'conf.toml').replace('\\', '/')
+        return os.path.join(path, 'conf.toml')
 
     # PATH NAME
     elif path_parts.path and not path_parts.extension:
-        return os.path.join(path_parts.path, path_parts.filename, 'conf.toml').replace('\\', '/')
+        return os.path.join(path_parts.path, path_parts.filename, 'conf.toml')
 
     # APP NAME
     elif path_parts.filename == config_path:
         path = get_app_dir(
             config_path, roaming=roaming, force_posix=force_posix
         )
-        return os.path.join(path, 'conf.toml').replace('\\', '/')
+        return os.path.join(path, 'conf.toml')
 
     # FILE NAME
     elif path_parts.extension == '.toml':
-        return config_path.replace('\\', '/')
+        return config_path
 
     raise ValueError('Config filename must have a ".toml" extension')
 
@@ -154,13 +162,13 @@ class Config:
     """
 
     def __init__(
-        self, config_path=None, mode='r',
-        encoding='utf-8', errors='strict',
-        roaming=True, force_posix=False
+            self, config_path=None, mode='r',
+            encoding='utf-8', errors='strict',
+            roaming=True, force_posix=False
     ):
         if mode not in ('r', 'r+', 'w'):
             raise ValueError(
-              "File context manager mode must be 'r', 'r+' or 'w'."
+                "File context manager mode must be 'r', 'r+' or 'w'."
             )
         self.__openfile = None
         self._mode = mode
