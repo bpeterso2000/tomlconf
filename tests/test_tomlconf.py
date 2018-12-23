@@ -1,8 +1,8 @@
-import pytest
 import os
 import sys
 import tempfile
 
+import pytest
 import tomlkit
 
 from tomlconf.core import Config, WIN, MAC, get_app_dir, get_filename, get_path_parts
@@ -148,13 +148,15 @@ def test_get_path_parts_empty():
 @pytest.mark.getpathparts
 @pytest.mark.skipif(not WIN, reason='Only for Windows based systems')
 def test_get_path_parts_all_backslashes():
-    assert get_path_parts('c:\\sub1\\sub2\\test.txt') == ('c:', 'sub1\\sub2', 'test', '.txt')
+    test_path = os.path.join('c:\\', 'sub1', 'sub2', 'test.txt')
+    assert get_path_parts(test_path) == (os.path.join('c:\\', 'sub1', 'sub2'), 'test', '.txt')
 
 
 @pytest.mark.getpathparts
 @pytest.mark.skipif(WIN, reason='Only for none Windows based systems')
 def test_get_path_parts_all_backslashes():
-    assert get_path_parts('c:\\sub1\\sub2\\test.txt') == ('', 'c:\\sub1\\sub2', 'test', '.txt')
+    test_path = os.path.join('c:\\', 'sub1', 'sub2', 'test.txt')
+    assert get_path_parts(test_path) == (os.path.join('c:\\', 'sub1', 'sub2'), 'test', '.txt')
 
 
 @pytest.mark.getpathparts
@@ -176,19 +178,20 @@ def test_get_path_parts_hidden():
 def test_config_path_not_set():
     result = get_filename()
     progname = os.path.splitext(os.path.basename(sys.argv[0]))[0]
-    endswith = os.path.join(progname, 'conf.toml')
+    endswith = '/'.join([progname, 'conf.toml'])
     assert result.endswith(endswith)
     assert len(result) > len(endswith)
 
 
 @pytest.mark.getfile
 def test_config_path_is_path():
-    assert get_filename(TEMP_PATH) == os.path.join(TEMP_PATH, 'conf.toml')
+    assert get_filename(TEMP_PATH) == '/'.join([TEMP_PATH.replace('\\', '/'), 'conf.toml'])
 
 
 @pytest.mark.getfile
 def test_config_path_looks_like_path():
-    assert get_filename('/not/really/a/path') == '/not/really/a/path/conf.toml'
+    path = '/not/really/a/path'
+    assert get_filename(path) == '/not/really/a/path/conf.toml'
 
 
 @pytest.mark.getfile

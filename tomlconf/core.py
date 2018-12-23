@@ -1,6 +1,7 @@
 import collections
 import os
 import sys
+
 import tomlkit
 import tomlkit.exceptions
 
@@ -125,22 +126,28 @@ def get_filename(config_path='', roaming=True, force_posix=False):
         path = get_app_dir(
             get_path_parts(sys.argv[0]).filename, roaming=roaming, force_posix=force_posix
         )
-        return os.path.join(path, 'conf.toml')
+        return os.path.join(path, 'conf.toml').replace('\\', '/')
 
     # PATH NAME
     elif path_parts.path and not path_parts.extension:
-        return os.path.join(path_parts.path, path_parts.filename, 'conf.toml')
+        # since on windows each drive as a current directory c:foo is perfectly acceptable. So os.path.join("c:", "foo")
+        # will return "c:foo" not "c:\foo"
+        if path_parts.drive and config_path[len(path_parts.drive)] in ('\\', '/'):
+            return os.path.join(path_parts.drive, '/', path_parts.path, path_parts.filename, 'conf.toml').replace('\\',
+                                                                                                                  '/')
+        else:
+            return os.path.join(path_parts.drive, path_parts.path, path_parts.filename, 'conf.toml').replace('\\', '/')
 
     # APP NAME
     elif path_parts.filename == config_path:
         path = get_app_dir(
             config_path, roaming=roaming, force_posix=force_posix
         )
-        return os.path.join(path, 'conf.toml')
+        return os.path.join(path, 'conf.toml').replace('\\', '/')
 
     # FILE NAME
     elif path_parts.extension == '.toml':
-        return config_path
+        return config_path.replace('\\', '/')
 
     raise ValueError('Config filename must have a ".toml" extension')
 
