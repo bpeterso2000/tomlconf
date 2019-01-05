@@ -1,4 +1,8 @@
 import os
+try:
+    import pathlib
+except ImportError:
+    import pathlib2 as pathlib  # python 2
 import sys
 import tomlkit
 import tomlkit.exceptions
@@ -7,11 +11,6 @@ from .errors import FileError, TOMLParseError, KeyAlreadyPresent
 
 WIN = sys.platform.startswith('win')
 MAC = sys.platform.startswith('darwin')
-
-
-def stem(path):
-    """Returns the filename without path & extension."""
-    return os.path.splitext(os.path.basename(path))[0]
 
 
 # get_app_dir is from the Click package. Visit
@@ -81,7 +80,7 @@ def parse_toml(s):
         raise TOMLParseError(e, e.line, e.col)
 
 
-def get_filename(config_path=None, roaming=True, force_posix=False):
+def get_filename(config_path='', roaming=True, force_posix=False):
     """Return the path/filename where the config will be stored.
     When config_path is a ...
         * PATH NAME: (looks like a directory)
@@ -93,28 +92,28 @@ def get_filename(config_path=None, roaming=True, force_posix=False):
         * NOT SET:
             <appdir>/<progname>/conf.toml
     """
-
+    p = pathlib.Path(config_path)
     # NOT SET
     if not config_path:
         path = get_app_dir(
-            stem(sys.argv[0]), roaming=roaming, force_posix=force_posix
+            pathlib.Path(sys.argv[0]).stem, roaming=roaming, force_posix=force_posix
         )
-        return os.path.join(path, 'conf.toml')
-
-    # PATH NAME
-    elif os.path.isdir(config_path):
-        path = config_path
         return os.path.join(path, 'conf.toml')
 
     # APP NAME
-    elif stem(config_path) == config_path:
+    elif p.stem == config_path:
         path = get_app_dir(
-            config_path, roaming=roaming, force_posix=force_posix
+            p.stem, roaming=roaming, force_posix=force_posix
         )
         return os.path.join(path, 'conf.toml')
 
+    # LOOKS A PATH
+    elif not p.suffix:
+        path = config_path
+        return os.path.join(path, 'conf.toml')
+
     # FILE NAME
-    elif os.path.basename(config_path).split('.')[1] == 'toml':
+    elif p.suffix == '.toml':
         return config_path
 
     raise ValueError('Config filename must have a ".toml" extension')
@@ -137,7 +136,7 @@ class Config:
     """
 
     def __init__(
-        self, config_path=None, mode='r',
+        self, config_path='', mode='r',
         encoding='utf-8', errors='strict',
         roaming=True, force_posix=False
     ):
