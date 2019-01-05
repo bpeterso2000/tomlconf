@@ -1,8 +1,4 @@
 import os
-try:
-    import pathlib
-except ImportError:
-    import pathlib2 as pathlib  # python 2 support
 import sys
 import tomlkit
 import tomlkit.exceptions
@@ -11,6 +7,11 @@ from .errors import FileError, TOMLParseError, KeyAlreadyPresent
 
 WIN = sys.platform.startswith('win')
 MAC = sys.platform.startswith('darwin')
+
+
+def stem(path):
+    """Returns the filename without path & extension."""
+    return os.path.splitext(os.path.basename(path))[0]
 
 
 # get_app_dir is from the Click package. Visit
@@ -80,7 +81,7 @@ def parse_toml(s):
         raise TOMLParseError(e, e.line, e.col)
 
 
-def get_filename(config_path='', roaming=True, force_posix=False):
+def get_filename(config_path=None, roaming=True, force_posix=False):
     """Return the path/filename where the config will be stored.
     When config_path is a ...
         * PATH NAME: (looks like a directory)
@@ -92,27 +93,28 @@ def get_filename(config_path='', roaming=True, force_posix=False):
         * NOT SET:
             <appdir>/<progname>/conf.toml
     """
-    path = pathlib.Path(config_path)
+
     # NOT SET
     if not config_path:
-        app_dir = get_app_dir(
-            pathlib.Path(sys.argv[0]).stem, roaming=roaming, force_posix=force_posix
+        path = get_app_dir(
+            stem(sys.argv[0]), roaming=roaming, force_posix=force_posix
         )
-        return os.path.join(app_dir, 'conf.toml')
+        return os.path.join(path, 'conf.toml')
 
     # PATH NAME
-    elif path.is_dir():
-        return os.path.join(config_path, 'conf.toml')
+    elif os.path.isdir(config_path):
+        path = config_path
+        return os.path.join(path, 'conf.toml')
 
     # APP NAME
-    elif path.stem == config_path:
-        app_dir = get_app_dir(
-            path.stem, roaming=roaming, force_posix=force_posix
+    elif stem(config_path) == config_path:
+        path = get_app_dir(
+            config_path, roaming=roaming, force_posix=force_posix
         )
-        return os.path.join(app_dir, 'conf.toml')
+        return os.path.join(path, 'conf.toml')
 
     # FILE NAME
-    elif path.suffix == '.toml':
+    elif os.path.basename(config_path).split('.')[1] == 'toml':
         return config_path
 
     raise ValueError('Config filename must have a ".toml" extension')

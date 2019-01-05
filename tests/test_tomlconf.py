@@ -157,22 +157,20 @@ def test_config_path_is_path():
 @pytest.mark.getfile
 def test_config_path_is_app_name():
     result = get_filename('foo')
-    endswith = os.path.join('foo', 'conf.toml')
+    endswith = os.path.join(*os.path.split('foo/conf.toml'))
     assert result.endswith(endswith)
     assert len(result) > len(endswith)
 
 
 @pytest.mark.getfile
 def test_config_path_is_file_name():
-    sep = os.path.sep
     assert get_filename('foo.toml') == 'foo.toml'
-    assert get_filename(''.join([sep, 'foo', sep, 'bar.toml'])) == ''.join([sep, 'foo', sep, 'bar.toml'])
+    assert get_filename('/foo/bar.toml') == '/foo/bar.toml'
 
 
 @pytest.mark.getfile
 def test_config_path_is_file_with_bad_extension():
-    sep = os.path.sep
     with pytest.raises(ValueError):
-        assert get_filename(''.join([sep, 'foo', sep, 'bar.yaml']))
+        assert get_filename('/foo/bar.yaml')
     with pytest.raises(ValueError):
         assert get_filename('foo.yaml')
