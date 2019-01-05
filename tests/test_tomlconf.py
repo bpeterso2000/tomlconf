@@ -1,11 +1,11 @@
+import pytest
 import os
 import sys
 import tempfile
 
-import pytest
 import tomlkit
 
-from tomlconf.core import Config, WIN, MAC, get_app_dir, get_filename, get_path_parts
+from tomlconf.core import Config, WIN, MAC, get_app_dir, get_filename
 
 TOML_SAMPLE1 = """# This is a TOML document.
 title = "TOML Example"
@@ -140,77 +140,39 @@ def test_get_nix_app_dir():
     assert app_dir in result and 'foo-bar' in result
 
 
-@pytest.mark.getpathparts
-def test_get_path_parts_empty():
-    assert get_path_parts() == ('', '', '', '')
-
-
-@pytest.mark.getpathparts
-@pytest.mark.skipif(not WIN, reason='Only for Windows based systems')
-def test_get_path_parts_all_backslashes():
-    test_path = os.path.join('c:/', 'sub1', 'sub2', 'test.txt')
-    assert get_path_parts(test_path) == (os.path.join('c:/', 'sub1', 'sub2'), 'test', '.txt')
-
-
-@pytest.mark.getpathparts
-@pytest.mark.skipif(WIN, reason='Only for none Windows based systems')
-def test_get_path_parts_all_backslashes():
-    test_path = os.path.join('c:\\', 'sub1', 'sub2', 'test.txt')
-    assert get_path_parts(test_path) == ('', os.path.join('c:\\', 'sub1', 'sub2'), 'test', '.txt')
-
-
-@pytest.mark.getpathparts
-def test_get_path_parts_app_name():
-    assert get_path_parts('myapp') == ('', '', 'myapp', '')
-
-
-@pytest.mark.getpathparts
-def test_get_path_parts_filename():
-    assert get_path_parts('config.ini') == ('', '', 'config', '.ini')
-
-
-@pytest.mark.getpathparts
-def test_get_path_parts_hidden():
-    assert get_path_parts('.config') == ('', '', '.config', '')
-
-
 @pytest.mark.getfile
 def test_config_path_not_set():
     result = get_filename()
     progname = os.path.splitext(os.path.basename(sys.argv[0]))[0]
-    endswith = '/'.join([progname, 'conf.toml'])
+    endswith = os.path.join(progname, 'conf.toml')
     assert result.endswith(endswith)
     assert len(result) > len(endswith)
 
 
 @pytest.mark.getfile
 def test_config_path_is_path():
-    assert get_filename(TEMP_PATH) == '/'.join([TEMP_PATH.replace('\\', '/'), 'conf.toml'])
-
-
-@pytest.mark.getfile
-def test_config_path_looks_like_path():
-    path = '/not/really/a/path'
-    assert get_filename(path) == '/not/really/a/path/conf.toml'
+    assert get_filename(TEMP_PATH) == os.path.join(TEMP_PATH, 'conf.toml')
 
 
 @pytest.mark.getfile
 def test_config_path_is_app_name():
     result = get_filename('foo')
-    endswith = 'foo/conf.toml'
+    endswith = os.path.join('foo', 'conf.toml')
     assert result.endswith(endswith)
     assert len(result) > len(endswith)
 
 
 @pytest.mark.getfile
 def test_config_path_is_file_name():
+    sep = os.path.sep
     assert get_filename('foo.toml') == 'foo.toml'
-    assert get_filename('/foo/bar.toml') == '/foo/bar.toml'
+    assert get_filename(''.join([sep, 'foo', sep, 'bar.toml'])) == ''.join([sep, 'foo', sep, 'bar.toml'])
 
 
 @pytest.mark.getfile
 def test_config_path_is_file_with_bad_extension():
+    sep = os.path.sep
     with pytest.raises(ValueError):
-        assert get_filename('/foo/bar.yaml')
+        assert get_filename(''.join([sep, 'foo', sep, 'bar.yaml']))
     with pytest.raises(ValueError):
         assert get_filename('foo.yaml')

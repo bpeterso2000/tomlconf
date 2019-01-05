@@ -1,7 +1,9 @@
-import collections
 import os
+try:
+    import pathlib
+except ImportError:
+    import pathlib2 as pathlib  # python 2 support
 import sys
-
 import tomlkit
 import tomlkit.exceptions
 
@@ -9,34 +11,6 @@ from .errors import FileError, TOMLParseError, KeyAlreadyPresent
 
 WIN = sys.platform.startswith('win')
 MAC = sys.platform.startswith('darwin')
-
-
-def get_path_parts(p=''):
-    """Breaks the full_path down into its component parts (path, filename, extension)
-
-    drive    : Only useful on DOS/Windows/NT is '' otherwise
-    path     : everything except the last directory or filename.ext
-    filename : everything after the last separator not including the extension
-    extension: everything after the last '.' in the filename including the '.'
-
-    NOTE: if the filename starts with a '.' that '.' is not counted as the start of the extension
-    """
-    PathParts = collections.namedtuple('PathParts', [
-        'drive',
-        'path',
-        'filename',
-        'extension',
-    ])
-    normp = p.replace('\\', '/')  # normalize the path to one python likes better
-    drive, fixed_path = os.path.splitdrive(normp)
-    path, basename = os.path.split(fixed_path)
-    filename, extension = os.path.splitext(basename)
-    #  send back the original string broken up not our normalized one
-    return PathParts(drive,
-                     p[normp.find(path):normp.find(path) + len(path)],
-                     p[normp.find(filename):normp.find(filename) + len(filename)],
-                     p[normp.find(extension):normp.find(extension) + len(extension)],
-                     )
 
 
 # get_app_dir is from the Click package. Visit
@@ -118,36 +92,28 @@ def get_filename(config_path='', roaming=True, force_posix=False):
         * NOT SET:
             <appdir>/<progname>/conf.toml
     """
-
-    path_parts = get_path_parts(config_path)
-
+    path = pathlib.Path(config_path)
     # NOT SET
     if not config_path:
-        path = get_app_dir(
-            get_path_parts(sys.argv[0]).filename, roaming=roaming, force_posix=force_posix
+        app_dir = get_app_dir(
+            pathlib.Path(sys.argv[0]).stem, roaming=roaming, force_posix=force_posix
         )
-        return os.path.join(path, 'conf.toml').replace('\\', '/')
+        return os.path.join(app_dir, 'conf.toml')
 
     # PATH NAME
-    elif path_parts.path and not path_parts.extension:
-        # since on windows each drive as a current directory c:foo is perfectly acceptable. So os.path.join("c:", "foo")
-        # will return "c:foo" not "c:\foo"
-        if path_parts.drive and config_path[len(path_parts.drive)] in ('\\', '/'):
-            return os.path.join(path_parts.drive, '/', path_parts.path, path_parts.filename, 'conf.toml').replace('\\',
-                                                                                                                  '/')
-        else:
-            return os.path.join(path_parts.drive, path_parts.path, path_parts.filename, 'conf.toml').replace('\\', '/')
+    elif path.is_dir():
+        return os.path.join(config_path, 'conf.toml')
 
     # APP NAME
-    elif path_parts.filename == config_path:
-        path = get_app_dir(
-            config_path, roaming=roaming, force_posix=force_posix
+    elif path.stem == config_path:
+        app_dir = get_app_dir(
+            path.stem, roaming=roaming, force_posix=force_posix
         )
-        return os.path.join(path, 'conf.toml').replace('\\', '/')
+        return os.path.join(app_dir, 'conf.toml')
 
     # FILE NAME
-    elif path_parts.extension == '.toml':
-        return config_path.replace('\\', '/')
+    elif path.suffix == '.toml':
+        return config_path
 
     raise ValueError('Config filename must have a ".toml" extension')
 
@@ -169,13 +135,13 @@ class Config:
     """
 
     def __init__(
-            self, config_path=None, mode='r',
-            encoding='utf-8', errors='strict',
-            roaming=True, force_posix=False
+        self, config_path=None, mode='r',
+        encoding='utf-8', errors='strict',
+        roaming=True, force_posix=False
     ):
         if mode not in ('r', 'r+', 'w'):
             raise ValueError(
-                "File context manager mode must be 'r', 'r+' or 'w'."
+              "File context manager mode must be 'r', 'r+' or 'w'."
             )
         self.__openfile = None
         self._mode = mode
