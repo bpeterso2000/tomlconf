@@ -9,7 +9,7 @@ setup(
     description='Description of my package',
     packages=find_packages(),
     install_requires=['tomlkit>=0.5.3',
-                      'pytest',
+                      'pytest', 'pathlib2'
                       ],
     test_requires=['pytz',
                   ]
