@@ -155,6 +155,11 @@ def test_config_path_is_path():
 
 
 @pytest.mark.getfile
+def test_config_path_looks_like_a_path():
+    assert get_filename('/foo') == os.path.join('/foo', 'conf.toml')
+
+
+@pytest.mark.getfile
 def test_config_path_is_app_name():
     result = get_filename('foo')
     endswith = os.path.join(*os.path.split('foo/conf.toml'))
