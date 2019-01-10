@@ -2,6 +2,7 @@ import pytest
 import os
 import sys
 import tempfile
+from pathlib import Path
 
 import tomlkit
 
@@ -44,6 +45,7 @@ def tmpfile(tmpdir):
     return str(p)
 
 
+@pytest.mark.io
 def test_read_only(tmpfile):
     with Config(tmpfile, 'r') as file:
         assert file.mode == 'r'
@@ -53,6 +55,7 @@ def test_read_only(tmpfile):
         assert file.data == OLD_DATA
 
 
+@pytest.mark.io
 def test_write_only(tmpfile):
     with Config(tmpfile, 'w') as file:
         assert file.data == TOML_BLANK
@@ -61,6 +64,7 @@ def test_write_only(tmpfile):
         assert file.data == NEW_DATA
 
 
+@pytest.mark.io
 def test_read_write(tmpfile):
     with Config(tmpfile, 'r+') as file:
         assert file.data == OLD_DATA
@@ -69,12 +73,14 @@ def test_read_write(tmpfile):
         assert file.data == NEW_DATA
 
 
+@pytest.mark.io
 def test_invalid_mode(tmpfile):
     with pytest.raises(ValueError):
         with Config(tmpfile, 'w+'):
             pass
 
 
+@pytest.mark.io
 def test_encoding(tmpfile):
     test_data_iso_8859_5 = tomlkit.loads("""
         [entry]
@@ -99,7 +105,7 @@ def test_encoding(tmpfile):
 @pytest.mark.skipif(not WIN, reason='For Windows platforms only')
 def test_get_win_app_dir():
     app_dir = os.environ.get('LOCALAPPDATA', os.path.expanduser('~'))
-    result = get_app_dir('Foo Bar', roaming=False)
+    result = str(get_app_dir('Foo Bar', roaming=False))
     assert app_dir in result and 'Foo Bar' in result
 
 
@@ -107,7 +113,7 @@ def test_get_win_app_dir():
 @pytest.mark.skipif(not WIN, reason='For Windows platforms only')
 def test_get_win_app_dir_roaming():
     app_dir = os.environ.get('APPDATA', os.path.expanduser('~'))
-    result = get_app_dir('Foo Bar', roaming=True)
+    result = str(get_app_dir('Foo Bar', roaming=True))
     assert app_dir in result and 'Foo Bar' in result
 
 
@@ -142,7 +148,7 @@ def test_get_nix_app_dir():
 
 @pytest.mark.getfile
 def test_config_path_not_set():
-    result = get_filename()
+    result = str(get_filename())
     progname = os.path.splitext(os.path.basename(sys.argv[0]))[0]
     endswith = os.path.join(progname, 'conf.toml')
     assert result.endswith(endswith)
@@ -151,21 +157,23 @@ def test_config_path_not_set():
 
 @pytest.mark.getfile
 def test_config_path_is_path():
-    assert get_filename(TEMP_PATH) == os.path.join(TEMP_PATH, 'conf.toml')
+    assert str(get_filename(TEMP_PATH)) == os.path.join(TEMP_PATH, 'conf.toml')
 
 
 @pytest.mark.getfile
 def test_config_path_is_app_name():
-    result = get_filename('foo')
+    result = str(get_filename('foo'))
     endswith = os.path.join(*os.path.split('foo/conf.toml'))
+    print(result)
+    print(endswith)
     assert result.endswith(endswith)
     assert len(result) > len(endswith)
 
 
 @pytest.mark.getfile
 def test_config_path_is_file_name():
-    assert get_filename('foo.toml') == 'foo.toml'
-    assert get_filename('/foo/bar.toml') == '/foo/bar.toml'
+    assert str(get_filename('foo.toml')) == 'foo.toml'
+    assert get_filename('/foo/bar.toml') == Path('/foo/bar.toml')
 
 
 @pytest.mark.getfile

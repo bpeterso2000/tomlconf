@@ -1,17 +1,14 @@
 import os
 import sys
+from pathlib import Path, PosixPath
+
 import tomlkit
-import tomlkit.exceptions
+import tomlkit.exceptions as tke
 
 from .errors import FileError, TOMLParseError, KeyAlreadyPresent
 
 WIN = sys.platform.startswith('win')
 MAC = sys.platform.startswith('darwin')
-
-
-def stem(path):
-    """Returns the filename without path & extension."""
-    return os.path.splitext(os.path.basename(path))[0]
 
 
 # get_app_dir is from the Click package. Visit
@@ -57,48 +54,57 @@ def get_app_dir(app_name, roaming=True, force_posix=False):
     """
     if WIN:
         key = roaming and 'APPDATA' or 'LOCALAPPDATA'
-        folder = os.environ.get(key)
-        if folder is None:
-            folder = os.path.expanduser('~')
-        return os.path.join(folder, app_name)
-
+        return Path(os.environ.get(key, Path.home())) / app_name
     if force_posix:
-        return os.path.join(os.path.expanduser('~/.' + _posixify(app_name)))
+        return PosixPath('~/.' + app_name).expanduser()
     if MAC:
-        return os.path.join(os.path.expanduser(
-            '~/Library/Application Support'), app_name)
-    return os.path.join(
-        os.environ.get('XDG_CONFIG_HOME', os.path.expanduser('~/.config')),
-        _posixify(app_name))
+        return Path.expanduser('~/Library/Application Support') / app_name
+    return PosixPath(
+        os.environ.get('XDG_CONFIG_HOME', PosixPath('~/.config').expanduser())
+    ) / app_name
 
 
 def parse_toml(s):
     try:
         return tomlkit.parse(s)
-    except tomlkit.exceptions.KeyAlreadyPresent as e:
+    except tke.KeyAlreadyPresent as e:
         raise KeyAlreadyPresent(e)
-    except tomlkit.exceptions.ParseError as e:
+    except tke.ParseError as e:
         raise TOMLParseError(e, e.line, e.col)
 
 
 def get_filename(config_path=None, roaming=True, force_posix=False):
     """Return the path/filename where the config will be stored.
 
-    When config_path is a ...
-
-        * PATH NAME: (looks like a directory)
-            <config_path>/conf.toml
-
-        * APP NAME (not a directory & doesn't have a file extension):
-            <appdir>/<config_path>/conf.toml
-
-        * FILE NAME (has a .toml extension):
-            <config_path>
-
-        * NOT SET:
+    When config_path is ...
+        1. Not Set:
             <appdir>/<progname>/conf.toml
+        2. App Name (not a directory & doesn't have a file extension):
+            <appdir>/<config_path>/conf.toml
+        3. Path Name: (looks like a directory)
+            <config_path>/conf.toml
+        4. File Name: (has a .toml extension):
+            <config_path>
     """
+    path = None
+    cpath = Path(config_path) if config_path else None
+    kwds = dict(roaming=roaming, force_posix=force_posix)
 
+    if not config_path:
+        path = get_app_dir(Path(sys.argv[0]).stem, **kwds)
+    elif cpath.stem == str(cpath):
+        path = get_app_dir(cpath.stem, **kwds)
+    elif not cpath.suffix:
+        path = cpath
+    elif cpath.suffix == '.toml':
+        return cpath
+    else:
+        raise ValueError('Config filename must have a ".toml" extension')
+
+    return path / 'conf.toml'
+
+
+    '''
     # NOT SET
     if not config_path:
         path = get_app_dir(
@@ -123,6 +129,7 @@ def get_filename(config_path=None, roaming=True, force_posix=False):
         return config_path
 
     raise ValueError('Config filename must have a ".toml" extension')
+    '''
 
 
 class Config:
