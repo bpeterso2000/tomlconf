@@ -164,8 +164,8 @@ def test_config_path_is_app_name():
 
 @pytest.mark.getfile
 def test_config_path_is_file_name():
-    assert get_filename('foo.toml') == 'foo.yaml'
-    assert get_filename('/foo/bar.toml') == '/foo/bar/toml'
+    assert get_filename('foo.toml') == 'foo.toml'
+    assert get_filename('/foo/bar.toml') == '/foo/bar.toml'
 
 
 @pytest.mark.getfile
