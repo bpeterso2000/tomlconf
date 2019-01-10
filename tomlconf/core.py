@@ -104,34 +104,6 @@ def get_filename(config_path=None, roaming=True, force_posix=False):
     return path / 'conf.toml'
 
 
-    '''
-    # NOT SET
-    if not config_path:
-        path = get_app_dir(
-            stem(sys.argv[0]), roaming=roaming, force_posix=force_posix
-        )
-        return os.path.join(path, 'conf.toml')
-
-    # PATH NAME
-    elif os.path.isdir(config_path):
-        path = config_path
-        return os.path.join(path, 'conf.toml')
-
-    # APP NAME
-    elif stem(config_path) == config_path:
-        path = get_app_dir(
-            config_path, roaming=roaming, force_posix=force_posix
-        )
-        return os.path.join(path, 'conf.toml')
-
-    # FILE NAME
-    elif os.path.basename(config_path).split('.')[1] == 'toml':
-        return config_path
-
-    raise ValueError('Config filename must have a ".toml" extension')
-    '''
-
-
 class Config:
     """File context manager
     config_path (str):
