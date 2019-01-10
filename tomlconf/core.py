@@ -86,22 +86,18 @@ def get_filename(config_path=None, roaming=True, force_posix=False):
         4. File Name: (has a .toml extension):
             <config_path>
     """
-    path = None
-    cpath = Path(config_path) if config_path else None
-    kwds = dict(roaming=roaming, force_posix=force_posix)
+cpath = Path(config_path) if config_path else None
+kwds = dict(roaming=roaming, force_posix=force_posix)
 
-    if not config_path:
-        path = get_app_dir(Path(sys.argv[0]).stem, **kwds)
-    elif cpath.stem == str(cpath):
-        path = get_app_dir(cpath.stem, **kwds)
-    elif not cpath.suffix:
-        path = cpath
-    elif cpath.suffix == '.toml':
-        return cpath
-    else:
-        raise ValueError('Config filename must have a ".toml" extension')
-
-    return path / 'conf.toml'
+if not config_path:
+    return get_app_dir(Path(sys.argv[0]).stem, **kwds) / 'conf.toml'
+if cpath.stem == str(cpath):
+    return get_app_dir(cpath.stem, **kwds) / 'conf.toml'
+if not cpath.suffix:
+    return cpath / 'conf.toml'
+if cpath.suffix == '.toml':
+    return cpath
+raise ValueError('Config filename must have a ".toml" extension')
 
 
 class Config:
