@@ -6,7 +6,8 @@ from pathlib import Path
 
 import tomlkit
 
-from tomlconf.core import Config, WIN, MAC, get_app_dir, get_filename
+from tomlconf.core import Config, get_filename
+from tomlconf.appdir import WIN, MAC, get_app_dir
 
 TOML_SAMPLE1 = """# This is a TOML document.
 title = "TOML Example"
