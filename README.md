@@ -29,11 +29,4 @@ Built on TOML Kit:
 pip install tomlconf
 ```
 
-##### Read a configuration file
-
-```python
-from tomlconf import Config
-
-with Config() as cfg:
-    data = cfg.data
-```
+See the [Documentation](https://www.notion.so/rmtf/TOML-Conf-ac39b49704624c7aa46d32374f38bb3e) for more information.
