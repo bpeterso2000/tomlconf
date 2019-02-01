@@ -41,14 +41,18 @@ WIN = platform.startswith('win')
 MAC = platform.startswith('darwin')
 
 
+def _posixify(name):
+    return '-'.join(name.split()).lower()
+
+
 def get_app_dir(app_name, roaming=True, force_posix=False):
     if WIN:
         key = roaming and 'APPDATA' or 'LOCALAPPDATA'
         return Path(environ.get(key, Path.home())) / app_name
     if force_posix:
-        return PosixPath('~/.' + app_name).expanduser()
+        return PosixPath('~/.' + _posixify(app_name)).expanduser()
     if MAC:
-        return Path.expanduser('~/Library/Application Support') / app_name
+        return Path('~/Library/Application Support').expanduser() / app_name
     return PosixPath(
         environ.get('XDG_CONFIG_HOME', PosixPath('~/.config').expanduser())
     ) / app_name

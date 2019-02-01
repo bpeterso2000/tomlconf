@@ -125,7 +125,7 @@ def test_get_mac_app_dir():
         os.path.expanduser('~'),
         '/Library/Application Support'
     )
-    result = get_app_dir('Foo Bar')
+    result = str(get_app_dir('Foo Bar'))
     assert app_dir in result and 'Foo Bar' in result
 
 
@@ -133,7 +133,7 @@ def test_get_mac_app_dir():
 @pytest.mark.skipif(WIN, reason="Only for non Windows based systems")
 def test_get_posix_app_dir():
     app_dir = os.path.expanduser('~')
-    result = get_app_dir('Foo Bar', force_posix=True)
+    result = str(get_app_dir('Foo Bar', force_posix=True))
     assert app_dir in result and '.foo-bar' in result
 
 
