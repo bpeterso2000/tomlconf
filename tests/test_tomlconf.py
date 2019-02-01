@@ -94,7 +94,7 @@ def test_encoding(tmpfile):
     with Config(tmpfile, 'w', encoding='iso-8859-5') as file:
         file.data = test_data_iso_8859_5
     with pytest.raises(UnicodeDecodeError):
-        with Config(tmpfile, 'r'):
+        with Config(tmpfile, 'r') as file:
             pass
     with Config(tmpfile, 'r', encoding='utf-8', errors='replace') as file:
         assert file.data == test_data_utf_8
@@ -159,11 +159,6 @@ def test_config_path_not_set():
 @pytest.mark.getfile
 def test_config_path_is_path():
     assert str(get_filename(TEMP_PATH)) == os.path.join(TEMP_PATH, 'conf.toml')
-
-
-@pytest.mark.getfile
-def test_config_path_looks_like_a_path():
-    assert get_filename('/foo') == os.path.join('/foo', 'conf.toml')
 
 
 @pytest.mark.getfile

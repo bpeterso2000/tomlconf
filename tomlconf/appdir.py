@@ -1,40 +1,28 @@
 r"""Get the config directory most appropriate for the platform.
-
 get_app_dir is adapted from the Click package; http://click.pocoo.org
 An app called ``"Foo Bar"`` would return something like the following:
-
 Mac OS X:
   ``~/Library/Application Support/Foo Bar``
-
 Mac OS X (POSIX):
   ``~/.foo-bar``
-
 Unix:
   ``~/.config/foo-bar``
-
 Unix (POSIX):
   ``~/.foo-bar``
-
 Win XP (roaming):
   ``C:\Documents and Settings\<user>\Local Settings\Application Data\Foo Bar``
-
 Win XP (not roaming):
   ``C:\Documents and Settings\<user>\Application Data\Foo Bar``
-
 Win 7 (roaming):
   ``C:\Users\<user>\AppData\Roaming\Foo Bar``
-
 Win 7 (not roaming):
   ``C:\Users\<user>\AppData\Local\Foo Bar``
-
 app_name (str):
     the application name.  This should be properly capitalized and
     can contain whitespace.
-
 roaming (bool):
     controls if the folder should be roaming or not on Windows. Has
     no affect otherwise.
-
 force_posix (bool):
     if this is set to `True` then on any POSIX system the folder
     will be stored in the home folder with a leading dot instead of
