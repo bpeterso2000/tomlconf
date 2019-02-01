@@ -20,18 +20,13 @@ def parse_toml(s):
 
 def get_filename(config_path=None, roaming=True, force_posix=False):
     """Return the path/filename where the config will be stored.
-
     When config_path is ...
-
         1. Not Set:
             <appdir>/<progname>/conf.toml
-
         2. App Name (not a directory & doesn't have a file extension):
             <appdir>/<config_path>/conf.toml
-
         3. Path Name: (looks like a directory)
             <config_path>/conf.toml
-
         4. File Name: (has a .toml extension):
             <config_path>
     """
@@ -51,19 +46,15 @@ def get_filename(config_path=None, roaming=True, force_posix=False):
 
 class Config:
     """File context manager
-
     config_path (str):
         path or file name
-
     mode:
         'r':  read-only (default)
         'r+': read & wite
         'w':  write-only
-
     encoding:
         See the codecs module for the list of supported encodings.
         The default is 'utf-8'.
-
     errors:
         See the documentation for codecs.register for a list of the
         permitted encoding error strings. The default is 'strict'.
