@@ -1,16 +1,21 @@
+from sys import version_info
 from setuptools import setup, find_packages
+
+PY2 = version_info.major == 2
+PY3 = version_info.major == 3
+
+install_requires = ['tomlkit>=0.5.3']
+if PY2 or (PY3 and version_info.minor < 5):
+    install_requires.append('pathlib2')
 
 setup(
     name='tomlconf',
-    version='0.1',
+    version='0.3',
     url='http://github.com/bpeterso2000/tomlconf',
-    author='Name',
-    author_email='author@mail.com',
-    description='Description of my package',
+    author='Brian Peterson',
+    author_email='bpeterso2000@yahoo.com',
+    description='The tiny TOML configuration tool.',
     packages=find_packages(),
-    install_requires=['tomlkit>=0.5.3',
-                      'pytest',
-                      ],
-    test_requires=['pytz',
-                  ]
+    install_requires=install_requires,
+    tests_require=['pytest']
 )
