@@ -1,2 +1,2 @@
-- Brian Peterson <bpeterso2000@yahoo.com>
-- Ernie White <erniewhite@embarqmail.com>
+- [Brian Peterson](https://github.com/bpeterso2000)
+- [Ernie White](https://github.com/erniewhite)
